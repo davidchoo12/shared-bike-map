@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <title>Mobike Mapper</title>
+  <style>
+    /* Always set the map height explicitly to define the size of the div
+     * element that contains the map. */
+    #map {
+      height: 100%;
+    }
+    /* Optional: Makes the sample page fill the window. */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    // const mobikeApiUrl = `https://mwx.mobike.com/mobike-api/rent/nearbyBikesInfo.do`;
+    const mobikeApiUrl = '/mobike';
+    const sgLatLng = {
+      lat: 1.3521, lng: 103.8198
+    }
+    let mobikeApiCall = getMobikes(sgLatLng.lat, sgLatLng.lng);
+    
+    let map;
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'),
+      {
+        zoom: 12,
+        center: {lat: sgLatLng.lat, lng: sgLatLng.lng }
+      });
+      mobikeApiCall
+        .then(res => res.json())
+        .then(body => {
+          body.object.forEach(e => {
+            placeMarker(e.distY, e.distX);
+          });
+        });
+      map.addListener('dragend', () => {
+        const centerLat = map.getCenter().lat();
+        const centerLng = map.getCenter().lng();
+        markMobikes(centerLat, centerLng);
+      });
+    }
+
+    // helper functions:
+    function placeMarker(lat, lng) {
+      var marker = new google.maps.Marker({
+        position: {lat: lat, lng: lng},
+        map: map
+      });
+    }
+    function getMobikes(lat, lng) {
+      return fetch(`${mobikeApiUrl}?latitude=${lat}&longitude=${lng}`);
+    }
+    function markMobikes(lat, lng) {
+      getMobikes(lat, lng)
+        .then(res => res.json())
+        .then(body => {
+          body.object.forEach(e => {
+            placeMarker(e.distY, e.distX);
+          });
+        });
+    }
+  </script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWhBBWIQUyNTzcOwkC7pEEhzSMXFni2Vk&callback=initMap">
+  </script>
+</body>
+</html>
