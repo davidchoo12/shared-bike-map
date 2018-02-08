@@ -26,7 +26,7 @@ app.get('/mobike', (req, res) => {
     .then(body => res.send(body))
     .catch(() => {});
 });
-app.listen(3000);
+app.listen(process.env.PORT || 8080);
 
 function getMobikes(lat, lng) {
   return fetch(`${mobikeApiUrl}?latitude=${lat}&longitude=${lng}`);
